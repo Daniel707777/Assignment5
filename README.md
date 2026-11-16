@@ -1,109 +1,128 @@
-# Assignment #5: Restaurant API 
-This repository contains your starter code for the Restaurant API assignment focusing on middleware implementation and API documentation.
+# Tasty Bites Restaurant API
 
-## Getting Started
-1. Clone this repository to your local machine
-2. Navigate to the project directory
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
+A RESTful Express.js API for managing the Tasty Bites restaurant menu. This project uses the assignment's supplied sample menu data and implements all five CRUD endpoints, request logging, input validation, consistent errors, and an importable Postman collection.
 
-## Assignment Overview
-You will build a complete restaurant menu management API that demonstrates:
-- **Custom middleware functions** for request logging and input validation
-- **Professional API documentation** using Postman collections
-- **Proper HTTP status codes** and error handling
-- **Secure API endpoints** with input validation and data sanitization
+## Requirements
+- Node.js 18 or newer
+- npm
+- Postman (for API testing and publishing public documentation)
 
-## Required Dependencies
-Install the following package for validation:
+## Setup and run
 ```bash
-npm install express-validator
+npm install
+npm start
+```
+The API runs at `http://localhost:3000` by default. To use another port, set the `PORT` environment variable.
+
+For automatic restart during development:
+```bash
+npm run dev
 ```
 
-## Sample Data Structure
-Your API will manage menu items with this structure:
-```javascript
+## Project structure
+```text
+tasty-bites-api/
+├── server.js
+├── package.json
+├── README.md
+├── .gitignore
+├── logs/
+│   └── .gitkeep
+├── postman/
+│   └── Tasty-Bites-API.postman_collection.json
+└── src/
+    ├── data/
+    │   └── menuItems.js
+    ├── middleware/
+    │   ├── errorHandler.js
+    │   ├── menuValidation.js
+    │   └── requestLogger.js
+    └── routes/
+        └── menuRoutes.js
+```
+
+## API endpoints
+
+Base URL: `http://localhost:3000`
+
+| Method | Endpoint | Description | Success |
+|---|---|---|---|
+| GET | `/api/menu` | Retrieve all menu items | 200 |
+| GET | `/api/menu/:id` | Retrieve one menu item | 200 |
+| POST | `/api/menu` | Create a menu item | 201 |
+| PUT | `/api/menu/:id` | Update an existing menu item | 200 |
+| DELETE | `/api/menu/:id` | Delete a menu item | 200 |
+
+### Menu item request body
+```json
 {
-  id: 1,
-  name: "Classic Burger",
-  description: "Beef patty with lettuce, tomato, and cheese on a sesame seed bun",
-  price: 12.99,
-  category: "entree",
-  ingredients: ["beef", "lettuce", "tomato", "cheese", "bun"],
-  available: true
+  "name": "Garden Salad",
+  "description": "Fresh mixed greens with tomatoes and house dressing",
+  "price": 9.5,
+  "category": "appetizer",
+  "ingredients": ["mixed greens", "tomatoes", "house dressing"],
+  "available": true
 }
 ```
 
-## Required API Endpoints
-- `GET /api/menu` - Retrieve all menu items
-- `GET /api/menu/:id` - Retrieve a specific menu item by ID
-- `POST /api/menu` - Add a new menu item
-- `PUT /api/menu/:id` - Update an existing menu item
-- `DELETE /api/menu/:id` - Remove a menu item
+`available` is optional and defaults to `true`. All other fields are required for POST and PUT.
 
-## Middleware Requirements
-Your API must implement two custom middleware functions:
+## Validation rules
+- `name`: required string, at least 3 characters
+- `description`: required string, at least 10 characters
+- `price`: required numeric value greater than 0
+- `category`: `appetizer`, `entree`, `dessert`, or `beverage`
+- `ingredients`: required array containing at least one non-empty string
+- `available`: optional boolean; defaults to `true`
 
-### 1. Request Logging Middleware
-- Log HTTP method, URL, and timestamp for all requests
-- Log request body for POST and PUT requests
-- Apply to all routes
+Validation errors return HTTP 400 with a consistent JSON response containing an `errors` array.
 
-### 2. Input Validation Middleware
-- Validate all required fields using express-validator
-- Apply to POST and PUT endpoints
-- Return appropriate error messages for validation failures
+## Middleware
+1. **Request logger** runs for every request. It records the timestamp, HTTP method, URL, and POST/PUT body in the terminal and appends JSON lines to `logs/requests.log`.
+2. **Menu validation** runs on POST and PUT requests using `express-validator`. It rejects invalid data before the route changes the menu.
+3. **Error handler** provides a consistent JSON response for unexpected errors.
 
-## Validation Rules
-- **Name**: Required string, minimum 3 characters
-- **Description**: Required string, minimum 10 characters
-- **Price**: Required number, greater than 0
-- **Category**: Required string, must be one of: "appetizer", "entree", "dessert", "beverage"
-- **Ingredients**: Required array with at least 1 ingredient
-- **Available**: Boolean (defaults to true)
-
-## HTTP Status Codes
-Your API must return appropriate status codes:
-- 200 for successful GET, PUT, DELETE requests
-- 201 for successful POST requests
-- 400 for validation errors
-- 404 for not found errors
-
-## Documentation Requirements
-Create comprehensive API documentation using Postman:
-- Create a collection with all API endpoints
-- Add clear descriptions for each endpoint
-- Include example request bodies for POST/PUT
-- Save response examples for both success and error cases
-- Publish documentation as a public website
-
-## Testing Your Implementation
-Use your Postman collection to test:
-- All CRUD operations work correctly
-- Middleware executes in proper order
-- Validation middleware rejects invalid data
-- Logging middleware captures all requests
-- All endpoints return correct status codes
-
-## Submission Requirements
-Your final submission should include:
-- Complete Express.js API with all CRUD endpoints
-- Two custom middleware functions (logging and validation)
-- Public URL to your Postman API documentation
-- Clean, organized code with meaningful variable names
-
-## File Structure
-```
-server.js
-package.json
-README.md
-```
-
-## Running the Server
-Start your development server:
+## Example requests
 ```bash
-npm start
+# List all menu items
+curl http://localhost:3000/api/menu
+
+# Get menu item 1
+curl http://localhost:3000/api/menu/1
+
+# Create a menu item
+curl -X POST http://localhost:3000/api/menu \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Garden Salad","description":"Fresh mixed greens with tomatoes and house dressing","price":9.5,"category":"appetizer","ingredients":["mixed greens","tomatoes","house dressing"]}'
+
+# Update menu item 1 (PUT requires all menu fields)
+curl -X PUT http://localhost:3000/api/menu/1 \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Classic Burger","description":"Beef patty with lettuce, tomato, and cheese on a sesame seed bun","price":13.5,"category":"entree","ingredients":["beef","lettuce","tomato","cheese","bun"],"available":true}'
+
+# Delete menu item 1
+curl -X DELETE http://localhost:3000/api/menu/1
 ```
-Your API will be available at `http://localhost:3000`
+
+## Test with Postman
+1. Start the server with `npm start`.
+2. In Postman, select **Import** and choose `postman/Tasty-Bites-API.postman_collection.json`.
+3. The collection uses the `baseUrl` variable, initially set to `http://localhost:3000`.
+4. Send each request. The collection includes request descriptions, example bodies, and basic status-code tests.
+5. Save real response examples: open a request's response menu and choose **Save as example**. Save successful and error responses with clear names (for example, `Successful GET - All menu items`, `Error 400 - Invalid menu item`, and `Error 404 - Menu item not found`).
+6. Open the collection's **View documentation** page and choose **Publish**. Follow Postman's prompts to publish the documentation publicly.
+7. Copy the resulting public documentation URL into your assignment submission. A public URL cannot be generated from this project folder; it must be published from your Postman account.
+
+## Important notes
+- This starter implementation stores data in memory. Menu changes are lost when the server restarts; a database is outside this assignment's stated requirements.
+- The request log is written locally to `logs/requests.log`. Do not commit logs containing real customer or sensitive data.
+- This assignment API has no authentication. Do not expose it publicly with real restaurant data without adding authentication, authorization, HTTPS, and production security controls.
+
+## Submission checklist
+- [ ] All five CRUD endpoints work in Postman.
+- [ ] Request logging runs for every endpoint.
+- [ ] POST and PUT reject invalid data with HTTP 400.
+- [ ] Missing menu items return HTTP 404.
+- [ ] Successful GET/PUT/DELETE return HTTP 200; successful POST returns HTTP 201.
+- [ ] Postman response examples are saved.
+- [ ] Postman documentation is published and its public URL is submitted.

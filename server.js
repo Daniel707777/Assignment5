@@ -1,63 +1,35 @@
-// Import packages, initialize an express app, and define the port you will use
+const express = require('express');
+const menuRoutes = require('./src/routes/menuRoutes');
+const requestLogger = require('./src/middleware/requestLogger');
+const errorHandler = require('./src/middleware/errorHandler');
 
+const app = express();
+const PORT = process.env.PORT || 3000;
 
+// Parse JSON before logging so POST/PUT bodies are available to the logger.
+app.use(express.json({ limit: '100kb' }));
+app.use(requestLogger);
 
-// Data for the server
-const menuItems = [
-  {
-    id: 1,
-    name: "Classic Burger",
-    description: "Beef patty with lettuce, tomato, and cheese on a sesame seed bun",
-    price: 12.99,
-    category: "entree",
-    ingredients: ["beef", "lettuce", "tomato", "cheese", "bun"],
-    available: true
-  },
-  {
-    id: 2,
-    name: "Chicken Caesar Salad",
-    description: "Grilled chicken breast over romaine lettuce with parmesan and croutons",
-    price: 11.50,
-    category: "entree",
-    ingredients: ["chicken", "romaine lettuce", "parmesan cheese", "croutons", "caesar dressing"],
-    available: true
-  },
-  {
-    id: 3,
-    name: "Mozzarella Sticks",
-    description: "Crispy breaded mozzarella served with marinara sauce",
-    price: 8.99,
-    category: "appetizer",
-    ingredients: ["mozzarella cheese", "breadcrumbs", "marinara sauce"],
-    available: true
-  },
-  {
-    id: 4,
-    name: "Chocolate Lava Cake",
-    description: "Warm chocolate cake with molten center, served with vanilla ice cream",
-    price: 7.99,
-    category: "dessert",
-    ingredients: ["chocolate", "flour", "eggs", "butter", "vanilla ice cream"],
-    available: true
-  },
-  {
-    id: 5,
-    name: "Fresh Lemonade",
-    description: "House-made lemonade with fresh lemons and mint",
-    price: 3.99,
-    category: "beverage",
-    ingredients: ["lemons", "sugar", "water", "mint"],
-    available: true
-  },
-  {
-    id: 6,
-    name: "Fish and Chips",
-    description: "Beer-battered cod with seasoned fries and coleslaw",
-    price: 14.99,
-    category: "entree",
-    ingredients: ["cod", "beer batter", "potatoes", "coleslaw", "tartar sauce"],
-    available: false
-  }
-];
+app.get('/', (req, res) => {
+  res.status(200).json({
+    message: 'Welcome to the Tasty Bites API',
+    endpoints: { menu: '/api/menu', documentation: 'Import postman/Tasty-Bites-API.postman_collection.json into Postman' }
+  });
+});
 
-// Define routes and implement middleware here
+app.use('/api/menu', menuRoutes);
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Route not found: ${req.method} ${req.originalUrl}`
+  });
+});
+
+app.use(errorHandler);
+
+if (require.main === module) {
+  app.listen(PORT, () => console.log(`Tasty Bites API running at http://localhost:${PORT}`));
+}
+
+module.exports = app;
