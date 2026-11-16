@@ -1,0 +1,278 @@
+{
+  "info": {
+    "_postman_id": "b8a41a7c-6a72-4d62-9c2f-2b9a8d8c1001",
+    "name": "Tasty Bites Restaurant API",
+    "description": "Complete menu CRUD API. Start the Express server locally, then send requests using the baseUrl collection variable. Save live response examples after testing and publish the collection documentation from Postman.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "GET - All menu items",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "description": "Returns all menu items with a count.",
+        "url": {
+          "raw": "{{baseUrl}}/api/menu",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "menu"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('Response includes menu data', () => pm.expect(pm.response.json()).to.have.property('data'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET - Menu item by ID",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "description": "Returns the menu item with ID 1. Change the ID in the URL to retrieve another item.",
+        "url": {
+          "raw": "{{baseUrl}}/api/menu/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "menu",
+            "1"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 or 404', () => pm.expect([200,404]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST - Create menu item",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "description": "Creates a menu item. The available field is optional and defaults to true.",
+        "url": {
+          "raw": "{{baseUrl}}/api/menu",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "menu"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Garden Salad\",\n  \"description\": \"Fresh mixed greens with tomatoes and house dressing\",\n  \"price\": 9.5,\n  \"category\": \"appetizer\",\n  \"ingredients\": [\n    \"mixed greens\",\n    \"tomatoes\",\n    \"house dressing\"\n  ],\n  \"available\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', () => pm.response.to.have.status(201));",
+              "if (pm.response.code === 201) pm.collectionVariables.set('createdMenuItemId', pm.response.json().data.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "POST - Validation error example",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "description": "Sends invalid data to demonstrate HTTP 400 validation messages.",
+        "url": {
+          "raw": "{{baseUrl}}/api/menu",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "menu"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"AB\",\n  \"description\": \"Too short\",\n  \"price\": -2,\n  \"category\": \"side\",\n  \"ingredients\": [],\n  \"available\": \"yes\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 400', () => pm.response.to.have.status(400));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "PUT - Update menu item",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "description": "Updates all editable fields for menu item ID 1. PUT requires the complete menu item body.",
+        "url": {
+          "raw": "{{baseUrl}}/api/menu/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "menu",
+            "1"
+          ]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Classic Burger\",\n  \"description\": \"Beef patty with lettuce, tomato, and cheese on a sesame seed bun\",\n  \"price\": 13.5,\n  \"category\": \"entree\",\n  \"ingredients\": [\n    \"beef\",\n    \"lettuce\",\n    \"tomato\",\n    \"cheese\",\n    \"bun\"\n  ],\n  \"available\": true\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 or 404', () => pm.expect([200,404]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "GET - Not found example",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "description": "Demonstrates the HTTP 404 response for an ID that does not exist.",
+        "url": {
+          "raw": "{{baseUrl}}/api/menu/99999",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "menu",
+            "99999"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 404', () => pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "DELETE - Remove menu item",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "description": "Deletes menu item ID 1. Change the ID to delete another item.",
+        "url": {
+          "raw": "{{baseUrl}}/api/menu/1",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "menu",
+            "1"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200 or 404', () => pm.expect([200,404]).to.include(pm.response.code));"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    }
+  ]
+}
